@@ -1,0 +1,106 @@
+# plot Surface Temperature figure by Lambert conformal
+# Need data in : https://downloads.psl.noaa.gov/Datasets/ncep.reanalysis/surface/
+# Need data : air.sig995.2023.nc, air.sig995.2022.nc, air.sig995.1948.nc
+
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeat
+import numpy as np
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER,LATITUDE_FORMATTER
+#from netCDF4 import Dataset
+import xarray as xr
+import matplotlib.ticker as mticker
+from matplotlib.ticker import MaxNLocator
+
+fig=plt.figure(figsize=(10,8))
+#ds=xr.open_dataset(r'air.sig995.2023.nc')
+ds=xr.open_dataset(r'air.sig995.2022.nc')
+ds2=xr.open_dataset(r'air.sig995.1948.nc')
+
+
+lats=ds.variables['lat'][:]
+lons=ds.variables['lon'][:]
+time=ds.variables['time'][:]
+temp1=ds.variables['air'][:]#2022
+temp2=ds2.variables['air'][:]#1948
+
+#temp=temp1-temp2
+
+lonl=60
+ibeg=int(lonl/2.5)
+lonr=180
+iend=int(lonr/2.5)
+
+latb=0
+jend=int((90-latb)/2.5)
+latt=80
+jbeg=int((90-latt)/2.5)
+
+ngridsx=iend-ibeg
+ngridsy=jend-jbeg
+
+c_lon=120
+c_lat=25
+para_latt=30
+para_latb=30
+
+lon=np.linspace(lonl,lonr,ngridsx)
+lat=np.linspace(latb,latt,ngridsy)
+lon2d,lat2d=np.meshgrid(lon,lat)
+
+temp2d=[]
+
+for j in range(73):
+    temp_row=[]
+    for i in range(144):
+        temp_row.append(temp1[852,j,i]-temp2[852,j,i])
+    temp2d.append(temp_row)####
+
+j1=0
+data=[]
+for j in range(jbeg,jend):
+    j1+=1
+    i1=0
+    data_row=[]
+    for i in range(ibeg,iend):
+        i1+=1
+        data_row.append(temp2d[jend-j+1][i])
+    data.append(data_row)
+
+levels=MaxNLocator(nbins=15).tick_values(np.nanmin(data),np.nanmax(data))
+
+proj=ccrs.LambertConformal(central_latitude=c_lat,
+                           central_longitude=c_lon,
+                           standard_parallels=(para_latb,para_latt))
+
+ax=plt.axes(projection=proj)
+cs=ax.pcolormesh(lon,lat,data,cmap='coolwarm',transform=ccrs.PlateCarree())
+cbar=plt.colorbar(cs,shrink=0.9,orientation='horizontal',
+                  label='110601201Surface Temperature 1 Jan 2022',extend='both')
+ax.contour(lon,lat,data,levels=levels,colors='k',transform=ccrs.PlateCarree())
+
+ax.add_feature(cfeat.OCEAN.with_scale('50m'))
+ax.add_feature(cfeat.LAND.with_scale('50m'),edgecolor='white')
+ax.add_feature(cfeat.COASTLINE.with_scale('50m'),edgecolor='white')
+ax.add_feature(cfeat.BORDERS.with_scale('50m'),edgecolor='white')
+
+#add map grid lines and legends:
+gl=ax.gridlines(crs=ccrs.PlateCarree(),draw_labels=True,
+                linewidth=2,color='black',alpha=0.50,linestyle='--')
+
+gl.top_labels=True
+gl.bot_labels=True
+gl.left_labels=True
+
+gl.xlines=True
+gl.ylines=True
+
+gl.xlocator=mticker.FixedLocator(range(lonl,lonr+10,10))
+gl.xformatter=LONGITUDE_FORMATTER
+gl.yformatter=LATITUDE_FORMATTER
+
+gl.xlabel_style={'size':15,'color':'gray'}
+gl.ylabel_style={'size':15,'color':'gray'}
+
+#fig.savefig('20230427.png',dpi=300)
+plt.show()
