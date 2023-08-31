@@ -1,0 +1,26 @@
+#draw a global map with two points and a line on it
+
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+
+proj = ccrs.Robinson() 
+fig = plt.figure(figsize=(12,8))
+ax = plt.axes(projection=proj)
+
+# make global map
+ax.set_global()
+ax.stock_img()
+ax.coastlines()
+# add data points
+ax.scatter(-0.08, 51.53, transform=ccrs.PlateCarree())
+ax.scatter(132, 43.17, transform=ccrs.PlateCarree())
+
+ax.scatter(-58.3817, -34.6033, transform=ccrs.PlateCarree())
+
+ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.PlateCarree(), linewidth=3, color='red')
+
+ax.plot([-58.3817, 132], [-34.6033, 43.17], transform=ccrs.PlateCarree(), linewidth=3, color='blue')
+
+plt.title("Global Map with Points and Lines")
+#fig.savefig("ttcartopy.png", dpi=300)
+plt.show()
