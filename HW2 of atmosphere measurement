@@ -1,0 +1,139 @@
+# Need data 10M_tower_data1.csv, 10M_tower_data2.csv
+
+import numpy as np
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+
+x1=pd.read_csv('/Users/ashley071010/10M_tower_data1.csv',usecols=['temp'])
+x2=pd.read_csv('/Users/ashley071010/10M_tower_data1.csv',usecols=['rh'])
+x3=pd.read_csv('/Users/ashley071010/10M_tower_data1.csv',usecols=['p'])
+x4=pd.read_csv('/Users/ashley071010/10M_tower_data2.csv',usecols=['temp'])
+x5=pd.read_csv('/Users/ashley071010/10M_tower_data2.csv',usecols=['rh'])
+x6=pd.read_csv('/Users/ashley071010/10M_tower_data2.csv',usecols=['p'])
+
+y1=x1[28800:30240]
+y2=x2[28800:30240]
+y3=x3[28800:30240]
+y4=x4[28800:30240]
+y5=x5[28800:30240]
+y6=x6[28800:30240]
+
+z1=np.around(y1,1)
+z2=np.around(y2,1)
+z3=np.around(y3,1)
+z4=np.around(y4,1)
+z5=np.around(y5,1)
+z6=np.around(y6,1)
+
+a1=np.array(z1)
+a2=np.array(z2)
+a3=np.array(z3)
+a4=np.array(z4)
+a5=np.array(z5)
+a6=np.array(z6)
+
+es1=6.112*np.exp((17.67*a1)/(a1+243.5))
+es2=6.112*np.exp((17.67*a4)/(a4+243.5))
+es11=np.around(es1,2)
+es22=np.around(es2,2)
+
+# Saturated water vapor pressure 飽和水氣壓
+y=np.arange(1440)
+fig=plt.figure(figsize=(8,4))
+plt.title('9/21 Saturated Water Vapor Pressure')
+plt.xlabel('Time(Minute)')
+plt.ylabel('Saturated water vapor pressure(hPa)')
+plt.plot(y,es11,label='Tower1')
+plt.plot(y,es22,label='Tower2')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+print(np.max(es11),np.min(es11))
+print(np.max(es22),np.min(es22))
+
+# Water vapor pressure
+e1=((a2/100)*es11)
+e2=((a5/100)*es22)
+e11=np.around(e1,2)
+e22=np.around(e2,2)
+
+y=np.arange(1440)
+fig=plt.figure(figsize=(8,4))
+plt.title('9/21 Water Vapor Pressure')
+plt.xlabel('Time(Minute)')
+plt.ylabel('Water vapor pressure(hPa)')
+plt.plot(y,e11,label='Tower1')
+plt.plot(y,e22,label='Tower2')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+print(np.max(e11),np.min(e11))
+print(np.max(e22),np.min(e22))
+
+# Dew Point Temperature
+td1=(243.5*np.log(e11/6.112))/(17.67-np.log(e11/6.112))
+td2=(243.5*np.log(e22/6.112))/(17.67-np.log(e22/6.112))
+td11=np.around(td1,2)
+td22=np.around(td2,2)
+
+y=np.arange(1440)
+fig=plt.figure(figsize=(8,4))
+plt.title('9/21 Dew Point Temperature')
+plt.xlabel('Time(Minute)')
+plt.ylabel('Dew Point Temperature($^o$C)')
+plt.plot(y,td11,label='Tower1')
+plt.plot(y,td22,label='Tower2')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+print(np.max(td11),np.min(td11))
+print(np.max(td22),np.min(td22))
+
+# Specific Humidity (wrong)
+q1=(e11/461.5*(a1))*1000/(((a3-e11)/(287*a1))+(e11/461.5*a1))
+q2=(e22/461.5*(a4))*1000/(((a6-e22)/(287*a4))+(e22/461.5*a4))
+q11=np.around(q1,2)
+q22=np.around(q2,2)
+
+y=np.arange(1440)
+fig=plt.figure(figsize=(8,4))
+plt.title('9/21 Specific Humidity')
+plt.xlabel('Time(Minute)')
+plt.ylabel('Specific Humidity(g/kg)')
+plt.plot(y,q11,label='Tower1')
+plt.plot(y,q22,label='Tower2')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+print(np.max(q11),np.min(q11))
+print(np.max(q22),np.min(q22))
+
+# Mixing ratio
+r1=(e11/(461.5*a1))*1000/((a3-e11)/(287*a1))
+r2=(e22/(461.5*a4))*1000/((a6-e22)/(287*a4))
+r11=np.around(r1,2)
+r22=np.around(r2,2)
+
+y=np.arange(1440)
+fig=plt.figure(figsize=(8,4))
+plt.title('9/21 Mixing Ratio')
+plt.xlabel('Time(Minute)')
+plt.ylabel('Mixing ratio(g/kg)')
+plt.plot(y,r11,label='Tower1')
+plt.plot(y,r22,label='Tower2')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+print(np.max(r11),np.min(r11))
+print(np.max(r22),np.min(r22))
