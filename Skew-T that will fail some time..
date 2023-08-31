@@ -1,0 +1,82 @@
+# Using data in WyomingUpperAir : https://weather.uwyo.edu/upperair/sounding.html
+
+from datetime import datetime
+import matplotlib.pyplot as plt
+from metpy.plots import SkewT
+from metpy.units import pandas_dataframe_to_unit_arrays, units
+#import numpy as np
+from siphon.simplewebservice.wyoming import WyomingUpperAir
+import metpy.calc as mpcalc
+
+import matplotlib.patches as mpatches
+dt=datetime(2023, 1, 15, 12)
+adt=dt.strftime("%Y%m%d%H%M%S")
+#station='45004'
+station='47918'
+
+#if station == '45004':
+#   astn = 'hk'
+
+if station == '47918':
+    astn = 'TW'
+
+#read sounding data
+data=WyomingUpperAir.request_data(dt, station)
+
+#create a dictionary with metpy
+df=pandas_dataframe_to_unit_arrays(data)
+print(df.keys())
+
+#extract data
+p=df['pressure']
+#print(p)
+T=df['temperature']
+Td=df['dewpoint']
+u=df['u_wind']
+v=df['v_wind']
+
+#plotting
+fig = plt.figure(figsize=(9,11))
+
+skew = SkewT (fig,rotation=45)
+
+skew.plot(p, T, 'r', lw=2, label='Temperature') #溫度曲線
+skew.plot (p, Td, 'b', lw=2, label='Dewpoint Temperature') #露點溫度曲線
+skew.plot_barbs (p[::3], u[::3], v[::3], y_clip_radius=0.03) #畫出最右邊的風羽
+          
+skew.ax.set_xlim(-30,40)
+skew.ax.set_ylim(1020,100)
+
+# alpha = transparency透明度
+skew.plot_dry_adiabats(t0=np.arange(233, 533, 10)*units.K, alpha=0.5, color='orange') #乾絕熱線
+skew.plot_moist_adiabats(t0=np.arange(233, 400, 5)*units.K, alpha=0.5, color='green') #濕絕熱線
+skew.plot_mixing_lines() #飽和混合比線
+
+prof = mpcalc.parcel_profile(p, T[0], Td[0]).to('degC') 
+skew.plot(p, prof, 'k', linewidth=2) #氣塊狀態曲線
+
+cape, cin = mpcalc.cape_cin(p, T, Td, prof, which_lfc='bottom', which_el='top')
+print(f'cape={cape}, cin={cin}')
+
+#skew.shade_cin(p, T, prof, Td) #畫出cin
+skew.shade_cape(p, T, prof) #畫出cape
+
+lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
+print(f'lcl_pressure={lcl_pressure}')
+
+#lcl_pressure, lfc_temperature = mpcalc.lfc(p, T, Td, parcel_temperature_profile=prof)
+
+plt.title('110601507, {}'.format(station+' '+astn), fontsize=15, loc='left')
+plt.title('Valid Time: {}'.format(dt), fontsize=15, loc='right')
+plt.xlabel ("Temperature ($^oC$)", fontsize=20)
+plt.ylabel ("Pressure (hPa)", fontsize=20)
+
+plt.legend (loc='upper left', fontsize=15)
+
+#fig.text(0.60, 0.85, 'cape={:.7}'.format(cape), fontsize=11)
+#fig.text(0.60, 0.83, 'cin={:.7}'.format(cin), fontsize=11)
+#fig.text(0.60, 0.85, 'lfc={:.7}'.format(lcl_pressure), fontsize=11)
+
+#plt.legend(['T cape= {:.7}'.format(cape), 'Td cin={:.7}'.format(cin)])
+
+plt.show()
