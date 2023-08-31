@@ -1,0 +1,16 @@
+import requests, ssl
+import shutil
+from time import sleep
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
+for x in range(15,87):
+    url = "https://ncueeclass.ncu.edu.tw/sysdata/doc/3/3db4326291d402e8/images/"+str(x)+".jpg"
+    file_name = str(x)+".jpg"
+    res = requests.get(url, stream = True)
+    if res.status_code == 200:
+        with open(file_name,'wb') as f:
+            shutil.copyfileobj(res.raw, f)
+        print('Image sucessfully Downloaded: ',file_name)
+    else:
+        print('Image Couldn\'t be retrieved')
