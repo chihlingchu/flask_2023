@@ -1,0 +1,9 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+x=np.arange(0,6.28,0.1)
+y=np.sin(x)
+z=np.cos(x)
+fig=plt.figure(figsize=(8,4))
+plt.plot(x,y)
+plt.plot(x,z)
