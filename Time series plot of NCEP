@@ -1,0 +1,24 @@
+# Need data in : https://downloads.psl.noaa.gov/Datasets/ncep.reanalysis/surface/
+# Need data : air.sfc.1981.nc
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from netCDF4 import Dataset
+data=Dataset(r'air.sfc.1981.nc')
+times = pd.date_range(start='5/26/22', end='5/31/22', freq='1H')
+t1 = np.sin(1/24 * 2 * np.pi * np.arange (121)) + (np.random.random((121)) * 0.5 + 25)
+t2 = np.sin(1/24 * 2 * np. pi * np.arange (121) + 1) + (np.random. random((121)) * 0.5 + 24)
+
+plt.plot(times, t1, color='blue', label='t1')
+plt.plot(times, t2, color='red', label='t2')
+
+plt.title('110601507 Time Series Plot')
+plt.xlabel('Time')
+plt.ylabel('Temperature($^o$C)')
+plt.legend(loc='best', fontsize=12)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+plt. savefig('ttsimple.png', dpi=300)
