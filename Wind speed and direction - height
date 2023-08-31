@@ -1,0 +1,76 @@
+import numpy as np
+import pandas as pd
+import statistics
+from statistics import mode, mean 
+import matplotlib
+import matplotlib.pyplot as plt
+
+#150(m/min)=2.5(m/s)
+#30*2.5=75每次紀錄上升75(m)，原離地高度6.26(m)
+
+a0=pd.read_csv('/Users/ashley071010/pibal_data2.csv',usecols=['t'])
+a1=pd.read_csv('/Users/ashley071010/pibal_data2.csv',usecols=['az'])
+a2=pd.read_csv('/Users/ashley071010/pibal_data2.csv',usecols=['el'])
+
+b0=np.array(a0['t'])
+b1=np.array(a1['az'])
+b2=np.array(a2['el'])
+
+h=6.26+b0*2.5
+#print(b0)
+
+E=h*(np.cos(b2)/np.sin(b2))*np.sin(b1)
+#print(E)
+N=h*(np.cos(b2)/np.sin(b2))*np.cos(b1)
+#print(N)
+
+EE = []
+for i in range(len(E)-1):
+    r=E[i+1]-E[i]
+    EE.append(r)
+#print(EE)
+
+NN = []
+for i in range(len(N)-1):
+    w=N[i+1]-N[i]
+    NN.append(w)
+#print(NN)
+
+EE1=np.array(EE)
+NN1=np.array(NN)
+
+wd=np.arctan(EE1/NN1)
+PQ=EE1/np.sin(wd)
+
+PQ1=np.array(PQ)
+ws=abs(PQ1/30)
+#print(ws)
+
+#風速-高度圖
+hh=h.tolist()
+del hh[0]
+#print(hh)
+ws1=np.around(ws,2)
+x=(ws1/60)
+y=(hh)
+fig=plt.figure(figsize=(8,4))
+plt.title('wind speed - height')
+plt.xlabel('wind speed(m/min)')
+plt.ylabel('height(m)')
+plt.plot(x,y)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
+
+#風向-高度圖
+wd1=np.around(wd,2)
+x=(wd1)
+y=(hh)
+fig=plt.figure(figsize=(8,4))
+plt.title('wind direction - height')
+plt.xlabel('wind direction')
+plt.ylabel('height(m)')
+plt.plot(x,y)
+
+ax = plt.gca()
+ax.grid(which='major', axis='both', linestyle='-')
