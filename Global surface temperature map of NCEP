@@ -1,0 +1,45 @@
+# Need data in : https://downloads.psl.noaa.gov/Datasets/ncep.reanalysis/surface/
+# Need data : air.sig995.2022.nc
+# It can print time, lats and lons and plot a surface temperature figure
+
+from netCDF4 import Dataset
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
+data=Dataset(r'air.sig995.2022.nc')
+#print(data.variables)
+#print(data.variables.keys())
+
+lats=data.variables['lat'][:]
+print(lats)
+lons=data.variables['lon'][:]
+print(lons)
+time=data.variables['time'][:]
+print(time)
+
+temp=data.variables['air'][:]
+print(temp)
+
+#fig=plt.figure(figsize=(12,9))
+
+mp=Basemap(projection='mill',
+          llcrnrlon=0., llcrnrlat=-90.,
+          urcrnrlon=360., urcrnrlat=90.,
+          resolution='l')
+
+lon, lat=np.meshgrid(lons, lats)
+x,y=mp(lon, lat)
+
+
+
+c_scheme=mp.pcolor(x, y, np.squeeze(temp[0, :, :,]), cmap='jet')
+mp.drawcoastlines()
+#mp.drawdatain()
+mp.drawcountries()
+cbar=mp.colorbar(c_scheme, location='bottom',pad='10%')
+
+plt.title('110601006 04:42:1A:86:40:1D')
+fig.savefig('ttnc.png',dpi=300)
+
+plt.show()
