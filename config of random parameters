@@ -1,0 +1,38 @@
+import configparser
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
+# 產生 100 個 0-1 之間的浮點數再加上對應數字
+df=pd.DataFrame({'pressure':np.random.random((100))+1012,'temperature':np.random.random((100))+19,'humidity':np.random.random((100))+80,'solar':np.random.random((100))+1000})
+df.head()
+
+#    pressure	 temperature humidity	   solar
+#0	1012.995739	19.742296	80.960830	1000.495324
+#1	1012.159183	19.141507	80.784442	1000.661252
+#2	1012.118900	19.408444	80.069589	1000.350944
+#3	1012.017514	19.392017	80.066380	1000.679771
+#4	1012.273357	19.760005	80.223055	1000.345511
+
+config=configparser.ConfigParser()
+config.read("plot_config.ini")
+config.sections()
+
+n_fields=len(df.columns)
+
+fig, axes=plt.subplots(nrows=n_fields, sharex=True)
+
+for i, field in enumerate(df.columns):
+    settings=dict(config['DEFAULT'])
+    if field in config.sections():
+        settings.update(dict(config[field]))
+
+    color=settings.get('color')
+    linestyle = settings.get('linestyle')
+    linewidth = settings.get ('linewidth')
+
+    axes[i].plot(df[field], color=color, linewidth = linewidth, linestyle = linestyle)
+    axes[i].set_ylabel(field)
